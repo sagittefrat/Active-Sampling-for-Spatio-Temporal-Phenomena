@@ -1,6 +1,8 @@
-from haversine import Haversine
-import  datetime
+
+
 import planning_gen, voi_gen, util, db
+import datetime
+from haversine import Haversine
 
 
 #######################
@@ -144,17 +146,18 @@ def main():
 	"""Entry point of the program"""
 	num_locations=4
 	# Instantiate the data problem
-	data_to_sample = Problem(num_locations) 
+	problem = Problem(num_locations) 
 	database=db.DB().merged_file
 
 
 	# Define weight of each edge
-	distance_evaluator = CreateDistanceEvaluator(data_to_sample).distance_evaluator	  
+	distance_evaluator = CreateDistanceEvaluator(problem).distance_evaluator	  
 
-	voi_evaluator = voi_gen.CreateVOIEvaluator(data_to_sample, database, distance_evaluator)
+	
+	voi_evaluator = voi_gen.CreateVOIEvaluator(problem, database, distance_evaluator)
 
 
-	planning_gen.generate_planning_problem(data_to_sample, distance_evaluator, voi_evaluator)
+	planning_gen.generate_planning_problem(problem, distance_evaluator, voi_evaluator, mode)
 
 if __name__ == '__main__':
 	main()

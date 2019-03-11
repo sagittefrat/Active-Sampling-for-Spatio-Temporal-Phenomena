@@ -2,7 +2,7 @@
 
     (:requirements 
         :action-costs :durative-actions :fluents :duration-inequalities 
-        :timed-initial-literals :typing
+        :timed-initial-literals :typing 
     )
     (:types rover waypoint objective)
 
@@ -11,6 +11,7 @@
         (distance ?from-waypoint - waypoint ?to-waypoint - waypoint)
 		(voi ?objective - objective )
 		(voi-decrease ?objective1 - objective ?objective2 - objective)
+		
 		(total-voi)
         
     )
@@ -21,7 +22,22 @@
 		(available-window ?objective - objective)
 		(need-sample ?objective - objective ?waypoint - waypoint )
 	    (sensor-free)
-		
+		(moved)		
+	)
+	
+	(:action voi-not-negative 
+		:parameters 
+			(?objective - objective)
+		:precondition 
+;			(and
+				 (< (voi ?objective) 0) 
+						  
+;			)
+				
+		:effect
+			(and
+				 (assign (voi ?objective) 0) 
+			)
 	)
 	     
     (:durative-action move
@@ -44,7 +60,7 @@
 	        (and 
 	            (at end (at ?rover ?to-waypoint))
 	            (at start (not (at ?rover ?from-waypoint)))
-
+				(at end (moved))
 	        )	
 	)
 	(:durative-action sample
@@ -73,8 +89,14 @@
 	        	(at end (sensor-free))
 	            (at start (not (need-sample ?objectivex ?waypoint)))
 				(at end (increase (total-voi) (voi ?objectivex)))
+
 				(forall (?objectivey - objective)
-					(at end (decrease (voi ?objectivey) (voi-decrease ?objectivex ?objectivey)))
+;                   (when (moved)
+  						(at end (decrease (voi ?objectivey) (voi-decrease ?objectivex ?objectivey)))
+;					)
+; 					(when (< (voi ?objectivey) (voi-decrease ?objectivex ?objctivey))
+; 						(at end (assign (voi ?objectivey) 0))
+					)
 				) 
 	        )	
 	)

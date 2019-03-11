@@ -1,5 +1,7 @@
 import numpy as np
-import os, random, math, datetime
+import os, random, math
+import datetime
+
 random.seed(1)
 
 def randomize_locations(num_locations, locations_dict, location_time_dict, start_time, coor1, coor2, tour_time_minutes=12*60, minutes_window=10):
@@ -22,8 +24,8 @@ def randomize_locations(num_locations, locations_dict, location_time_dict, start
 	
 def euclidian_distance(position_1, position_2):
 	"""Computes the euclidian distance between two points"""
-	return round(math.sqrt(( (position_1[0] - position_2[0])**2 +
-			(position_1[1] - position_2[1])**2 )), 2)
+	return ( (position_1[0] - position_2[0])**2 +
+			(position_1[1] - position_2[1])**2 )
 
 			
 def plot_map(lats,lons):
@@ -54,4 +56,4 @@ def find_difference_time(time1, time2):
 	if time1_hour< time2_hour:
 		return abs(min((time2_hour-time1_hour)*60,(time2_hour+24-time1_hour)*60) + (time2_minute-time1_minute))
 	else:
-		return abs(min((time1_hour-time2_hour)*60,(time1_hour+24-time2_hour)*60) + (time1_minute-time2_minute))
+		return (min((time1_hour-time2_hour)*60,(time1_hour+24-time2_hour)*60) + (time1_minute-time2_minute))**2
