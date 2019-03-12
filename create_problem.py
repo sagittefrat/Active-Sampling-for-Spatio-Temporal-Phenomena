@@ -157,7 +157,7 @@ def main():
 	voi_evaluator = voi_gen.CreateVOIEvaluator(problem, database, distance_evaluator)
 
 
-	planning_gen.generate_planning_problem(problem, distance_evaluator, voi_evaluator, mode)
+	planning_gen.generate_planning_problem(problem, distance_evaluator, voi_evaluator)
 
 if __name__ == '__main__':
 	main()
