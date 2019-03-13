@@ -1,5 +1,5 @@
 
-def generate_planning_problem(problem, distance_evaluator, voi_evaluator, mode='optimise'):
+def generate_planning_problem(problem, distance_evaluator, voi_evaluator, mode='optimise', problem_name='rover_problem.pddl'):
 
 	
 	
@@ -75,14 +75,17 @@ def generate_planning_problem(problem, distance_evaluator, voi_evaluator, mode='
 											  pair_voi_text,\
 											  total_voi)
 		
-		init_text='\n\t(:init\n%s\n) ' %(init_text_no_optimise)
+	init_text='\n\t(:init\n%s\n) ' %(init_text_no_optimise)
 	
 	goal_text='\n\t(:goal\n\t\t(and\n\t\t\t(> (total-voi) 0))\n)'
 	metric_text='\n\t(:metric\n\t\tmaximize (total-voi))\n)'
 
 	text+=objects_text+init_text+goal_text+metric_text+'\n)'
 
-	with open("problem.pddl", "w") as text_file:	
+	if mode=='optimise':
+		problem_name='rover_problem_voi.pddl'
+	
+	with open(problem_name, 'w') as text_file:	
 		text_file.write(text)
 
 		

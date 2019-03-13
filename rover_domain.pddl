@@ -9,10 +9,8 @@
     (:functions
         (speed ?rover - rover)
         (distance ?from-waypoint - waypoint ?to-waypoint - waypoint)
-		(voi ?objective - objective )
-		(voi-decrease ?objective1 - objective ?objective2 - objective)
+	
 		
-		(total-voi)
         
     )
 
@@ -25,20 +23,7 @@
 		(moved)		
 	)
 	
-	(:action voi-not-negative 
-		:parameters 
-			(?objective - objective)
-		:precondition 
-;			(and
-				 (< (voi ?objective) 0) 
-						  
-;			)
-				
-		:effect
-			(and
-				 (assign (voi ?objective) 0) 
-			)
-	)
+
 	     
     (:durative-action move
         :parameters 
@@ -88,16 +73,8 @@
 	        	(at start (not (sensor-free)))
 	        	(at end (sensor-free))
 	            (at start (not (need-sample ?objectivex ?waypoint)))
-				(at end (increase (total-voi) (voi ?objectivex)))
-
-				(forall (?objectivey - objective)
-;                   (when (moved)
-  						(at end (decrease (voi ?objectivey) (voi-decrease ?objectivex ?objectivey)))
-;					)
-; 					(when (< (voi ?objectivey) (voi-decrease ?objectivex ?objctivey))
-; 						(at end (assign (voi ?objectivey) 0))
-					)
-				) 
+				
+				 
 	        )	
 	)
 )
