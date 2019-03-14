@@ -144,24 +144,41 @@ class Problem():
 ########
 def main():
 	"""Entry point of the program"""
-	num_locations=4
-	lookahead=4
+	
+	# Define weight of each edge
 	mode='optimise'
 	mode='lookahead'
-	voi_evaluator=None
-	# Instantiate the data problem
-	problem = Problem(num_locations) 
-	database=db.DB().merged_file
-
-
-	# Define weight of each edge
-	distance_evaluator = CreateDistanceEvaluator(problem).distance_evaluator	  
 
 	if mode=='optimise':
+		num_locations=4
+		
+		
+		# Instantiate the data problem
+		problem = Problem(num_locations) 
+		database=db.DB().merged_file
+	
+		distance_evaluator = CreateDistanceEvaluator(problem).distance_evaluator	
 		voi_evaluator = voi_gen.CreateVOIEvaluator(problem, database, distance_evaluator)
+	
 	elif mode == 'lookahead':
+		num_locations=6
+		
+		# Instantiate the data problem
+		
+		problem = Problem(num_locations)
+		database=None
+		
+		distance_evaluator = CreateDistanceEvaluator(problem).distance_evaluator
+		voi_evaluator=None
+		
+		lookahead=4
+		
+		
+		
 		for k in range(lookahead):
-			pass
+			
+	
+			
 
 
 	planning_gen.generate_planning_problem(problem, distance_evaluator, voi_evaluator, mode)
