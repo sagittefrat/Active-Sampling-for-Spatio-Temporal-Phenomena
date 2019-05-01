@@ -9,6 +9,7 @@
     (:functions
         (speed ?rover - rover)
         (distance ?from-waypoint - waypoint ?to-waypoint - waypoint)
+        (total-voi)
 	
 		
         
@@ -17,10 +18,11 @@
     (:predicates
 	    (can-move ?from-waypoint - waypoint  ?to-waypoint - waypoint ) 
         (at ?rover - rover ?waypoint - waypoint )	
-		(available-window ?objective - objective)
-		(need-sample ?objective - objective ?waypoint - waypoint )
+	    (available-window ?objective - objective)
+	    (need-sample ?objective - objective ?waypoint - waypoint )
+        (sampled ?objective - objective)
 	    (sensor-free)
-		(moved)		
+	    (moved)		
 	)
 	
 
@@ -53,7 +55,7 @@
             (?rover - rover
              ?waypoint - waypoint
              ?objectivex - objective
-             ;?objectivey - objective
+          
 
 			)
         
@@ -72,7 +74,9 @@
 	        (and 
 	        	(at start (not (sensor-free)))
 	        	(at end (sensor-free))
-	            (at start (not (need-sample ?objectivex ?waypoint)))
+				(at start (not (need-sample ?objectivex ?waypoint)))
+				(at end (increase (total-voi) 1))
+				(at end (sampled ?objectivex))
 				
 				 
 	        )	

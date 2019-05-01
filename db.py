@@ -4,7 +4,8 @@
 import pandas as pd
 import os, json, datetime
 data_path='./data/'
-merged_file_name='clean_combined_data.json'
+#merged_file_name='clean_combined_data.json'
+merged_file_name='labeled_data.json'
 
 class DB:
 		

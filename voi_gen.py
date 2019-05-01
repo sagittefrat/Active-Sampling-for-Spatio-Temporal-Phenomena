@@ -1,13 +1,13 @@
 from haversine import Haversine
 import datetime
 import numpy as np
-import util
+import util, problem
 		
 class CreateVOIEvaluator(object):
 	"""Creates callback to get property of each location."""
 	
 
-	def __init__(self,data, database, distance_evaluator):
+	def __init__(self, data, database, distance_evaluator):
 		"""Initializes the total time matrix."""
 		
 
@@ -17,39 +17,53 @@ class CreateVOIEvaluator(object):
 		self.voi_decrease={}
 
 		self.find_objective_properties(data, database)
-		self.find_pair_voi_decrease(data, distance_evaluator)
-		
-		
+		#self.find_pair_voi_decrease(data, distance_evaluator)
+		#self.points_utility(self, data, database, distance_evaluator)
+	
+	def points_utility(self, data, database, distance_evaluator):
+		for objective in range(0,data.num_objectives):
+			
+			(loc, time_i) = data.objectives.objectives_dict[objective]
+			objective_coor= data.objectives.locations_dict[loc]
+			objective_time= time_i.time()
+			average_distance= distance_evaluator(objective)
+			k_nearest_neigh=self.find_k_nearest_neigh(objective_time, objective_coor, database, objective)
+			
+			from operator import itemgetter
+			p1 = sum(map(itemgetter(2), k_nearest_neigh))/len(k_nearest_neigh)
+			p0=1-p1
+
+			
+			
+	
+	
 	
 	def find_objective_properties(self, data, database, k_dist=10, l_time=3, alpha=0.5):
 		"""Gets the property of each location."""
 		
-		for objective in range(0,data.num_objectives):
-			(loc, time_i) = data.location_time_dict[objective]
+		for objective in data.objectives.objectives_dict.values():
 			
-			objective_coor=data.locations_dict[loc]
-			objective_time=time_i.time()
 			
-			k_nearest_neigh=self.find_k_nearest_neigh(objective_time, objective_coor, database, objective)
-			#l_neareset_neigh_by_time=self.find_l_nearest_neigh_by_time(objective_time, objective_coor, k_nearest_neigh_by_place, l_time, database, objective)
+			
+			k_nearest_neigh=self.find_k_nearest_neigh(objective, database)
 			
 			#objective_value = self.classifier(k_nearest_neigh, database)
 			objective_voi = self.voi_eval(k_nearest_neigh, objective)
 			
-			self._objective_voi[objective] = objective_voi
-			#self._objective_value[objective] = objective_value
+			self._objective_voi[objective.id] = objective_voi
+		
  
-	def find_k_nearest_neigh(self, objective_time, objective_coor, database, objective, k=3):
+	def find_k_nearest_neigh(self, objective, database, k=3):
 		dist=[]
 		
 		
 		for i, line in database.iterrows():
-			dist_loc= util.euclidian_distance(objective_coor, (line['lat'], line['lon']))
+			dist_loc= objective.location.euclidian_distance(problem.Coor((line['lat'], line['lon'])))
 		
-			i_time=datetime.datetime.fromtimestamp(database.iloc[i]['unix time']).time()
-			dist_time=util.find_difference_time(objective_time,i_time)
 			
-			dist.append((i,np.sqrt(dist_loc+dist_time)))
+			dist_time=objective.sample_time.find_difference_time(problem.TimeWindow(database.iloc[i]['unix time']))
+			
+			dist.append((i, np.sqrt(dist_loc+dist_time), line['label']))
 			
 		self._objective_neigh[objective]=sorted(dist, key = lambda x: x[1])
 		
@@ -93,7 +107,7 @@ class CreateVOIEvaluator(object):
 		return (humidity, pressure)
 
 	def voi_eval(self, l_neareset_neigh, objective, alpha=0.5):
-		if objective==0: return 0
+		#if objective.id==0: return 0
 		to_compare_time=[i[1] for i in l_neareset_neigh ]
 		#to_compare_place=[i[2] for i in l_neareset_neigh_by_time ]
 		
@@ -117,8 +131,8 @@ class CreateVOIEvaluator(object):
 				time_neighbors_j=self._objective_neigh[objective_j]
 				self.voi_decrease.setdefault(objective_j,{})
 								
-				(loc_i, time_i) = data.location_time_dict[objective_i]
-				(loc_j, time_j) = data.location_time_dict[objective_j]
+				(loc_i, time_i) = data.objectives.objectives_dict[objective_i]
+				(loc_j, time_j) = data.objectives.objectives_dict[objective_j]
 				objective_time_i=time_i.time()
 				objective_time_j=time_j.time()
 			

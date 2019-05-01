@@ -3,6 +3,7 @@
 import planning_gen, voi_gen, util, db
 import datetime
 from haversine import Haversine
+import random
 
 
 #######################
@@ -28,9 +29,13 @@ class CreateDistanceEvaluator(object):
 							data.locations_dict[from_node],
 							data.locations_dict[to_node])).meters
 
-	def distance_evaluator(self, from_node, to_node):
+	def distance_evaluator(self, from_node, to_node=None):
 		"""Returns the manhattan distance between the two nodes"""
-		return self._distances[from_node][to_node]
+		if to_node!=None:
+			return self._distances[from_node][to_node]
+			
+		return self._distances[from_node].values().avg()
+		
 	
 	
 	
@@ -84,11 +89,13 @@ class Problem():
 		
 		self.num_objectives=util.randomize_locations(self.num_locations, self._locations_dict, self.location_time_dict, start_time, eilat_coor, metula_coor, tour_time_minutes, minutes_window)
 
+		
+		''' #this is for plotting the locations on a grpah: 
 		lons,lats=([coor[1] for node, coor in self._locations_dict.items()], [coor[0] for node, coor in self._locations_dict.items()])
-
-		util.plot_map(lons, lats)
+		util.plot_map(lons, lats)'''
 
 		self.time_window=self.time_evaluator_for_planner(tour_time_minutes, minutes_window)
+		self.distance_evaluator={}
 		
 	@property
 	def vehicle(self):
@@ -137,19 +144,45 @@ class Problem():
 	
 					
 		return time_window
+		
+	def distance_evaluator_lookahead(self,):
+		
+		for from_node, (loc_from, sample_time_from) in self.location_time_dict:
+			self.distance_evaluator.get(from_node,{})
+			for to_node, (loc_to, sample_time_to) in self.location_time_dict:
+				
+				self.distance_evaluator[from_node].get(to_node,{})
+				if from_node == to_node:
+					self._distances[from_node][to_node] = 0
+					continue
+				
+				dist_loc= euclidian_distance(loc_from, loc_to)
+				dist_time=find_difference_time(sample_time_from, sample_time_to)
+				
+				self.distance_evaluator[from_node][to_node]=np.sqrt(dist_loc+dist_time)
+				self.gamma[from_node][to_node]=np.sqrt(dist_loc+dist_time)
+			
+	
+		
 
+				
+def compute_class_prob(X, d_tag, class_pro_u0, class_pro_u1, distance_evaluator):
+	
+	sum_u0, sum_u1=util.find_k_nearest_neigh(X, d_tag, class_pro_u0, class_pro_u1, distance_evaluator)
 
+	
+MODE=('optimise', 'lookahead', 'utility_pairs_time')				
 ########
 # Main #
 ########
 def main():
 	"""Entry point of the program"""
-	
-	# Define weight of each edge
-	mode='optimise'
-	mode='lookahead'
 
-	if mode=='optimise':
+
+	# Define weight of each edge
+	mode=MODE[2]
+
+	if mode==MODE[0]:
 		num_locations=4
 		
 		
@@ -160,27 +193,53 @@ def main():
 		distance_evaluator = CreateDistanceEvaluator(problem).distance_evaluator	
 		voi_evaluator = voi_gen.CreateVOIEvaluator(problem, database, distance_evaluator)
 	
-	elif mode == 'lookahead':
+	elif mode == MODE[1]:
 		num_locations=6
 		
 		# Instantiate the data problem
 		
 		problem = Problem(num_locations)
-		database=None
-		
-		distance_evaluator = CreateDistanceEvaluator(problem).distance_evaluator
+		# choose random point for D when D is empty:
+		database=random.choice(list(problem.location_time_dict.items()))
+		distance_evaluator = problem.distance_evaluator_lookahead
 		voi_evaluator=None
 		
 		lookahead=4
 		
 		
-		
+		X=problem.location_time_dict.items()
+		class_pro_u0, class_pro_u1 = {}, {}
 		for k in range(lookahead):
+			u_max=0
+			x_best=0
+			x_label=0
+			d_tag=[database]
 			
+			for x in X:
+				
+				u0, u1 = compute_class_prob(X, d_tag, class_pro_u0, class_pro_u1, distance_evaluator)
+				p0_x, p1_x = compute_class_prob([x], database, {}, {}, distance_evaluator)
+				u=p0_x*u0+p1_x*u1
+				if u>u_max: 
+					u_max=u
+					x_best=x
+					if p0_x<p1_x:
+						x_label=1
+			
+			database.append(x_best[0], x_best[1], x_label)
+			
+		elif mode == MODE[2]:
+			num_locations=6
+			problem = Problem(num_locations) 
+			database=db.DB().merged_file
+			
+			distance_evaluator = CreateDistanceEvaluator(problem).distance_evaluator	
+			voi_evaluator = voi_gen.CreateVOIEvaluator(problem, database, distance_evaluator)
+		
+			points_utility=voi_evaluator.get_utility
+			pairs_utility=voi_evaluator.get_pairs_utility
 	
-			
-
-
+	
 	planning_gen.generate_planning_problem(problem, distance_evaluator, voi_evaluator, mode)
 
 if __name__ == '__main__':
