@@ -58,12 +58,12 @@ class CreateVOIEvaluator(object):
 		
 		
 		for i, line in database.iterrows():
-			dist_loc= objective.location.euclidian_distance(problem.Coor((line['lat'], line['lon'])))
+			dist_loc= objective.location.euclidian_distance(problem.Coor(database.get_lat_lon(i)))
 		
 			
-			dist_time=objective.sample_time.find_difference_time(problem.TimeWindow(database.iloc[i]['unix time']))
+			dist_time=objective.sample_time.find_difference_time(problem.TimeWindow(database.get_sample_time(i)))
 			
-			dist.append((i, np.sqrt(dist_loc+dist_time), line['label']))
+			dist.append((i, np.sqrt(dist_loc+dist_time), get_label(i)))
 			
 		self._objective_neigh[objective]=sorted(dist, key = lambda x: x[1])
 		

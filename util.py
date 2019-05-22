@@ -2,7 +2,7 @@ import numpy as np
 import os, random, math
 import datetime
 
-random.seed(1)
+
 
 
 
