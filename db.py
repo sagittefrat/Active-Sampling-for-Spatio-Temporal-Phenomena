@@ -5,7 +5,6 @@ import pandas as pd
 import os, json, datetime
 import matplotlib.pyplot as plt
 data_path='./data/'
-#merged_file_name='clean_combined_data.json'
 merged_file_name='labeled_data_weather.json'
 
 
@@ -15,14 +14,14 @@ class DB:
 		problem_name=problem_name
 		self.merged_file=pd.read_json(problem_name, orient='index')
 
-		self.train_set=self.create_train_set('spirals_train.json')
-
+		self.train_set=self.create_train_set('spirals_train_200.json')
+		#self.train_set=self.create_train_set()
 	
 	def create_train_set(self, train_file_name=None):
 		print('train_file_name', train_file_name)
 		if train_file_name is None:	
-			random_objective_df=self.merged_file.sample(int(len(self.merged_file)*0.1))
-			random_objective_df.to_json('spirals_train.json', orient='index' )
+			random_objective_df=self.merged_file.sample(int(len(self.merged_file)*0.001))
+			random_objective_df.to_json('spirals_train_%s.json' %(len(random_objective_df)), orient='index' )
 			return random_objective_df
 		else:
 			random_objective_df=pd.read_json(train_file_name, orient='index')
@@ -56,23 +55,22 @@ class DB:
 				for line in json_text.values():
 					
 					city_name = line['name']
-					#unix_time=datetime.datetime.fromtimestamp(line['dt'])
 					unix_time=line['dt']
-					#time_hour_minute=unix_time.time
-
+				
 					lat, lon = line['coord']['lat'], line['coord']['lon']
 					wind = line['wind']
 					humidity = line['main']['humidity'] 
 					pressure = line['main']['pressure']
 					day = datetime.datetime.fromtimestamp(unix_time).strftime('%A')
-					#print('city_name %s, time %s, lon %s, lat %s, wind %s, humidity %s, pressure %s, day %s' %(city_name, time, lon, lat, wind, humidity, pressure, day))
-					
 								
 					# here I push a list of data into a pandas DataFrame at row given by 'index'
 					jsons_data.loc[i] = [city_name, unix_time, lon, lat, wind, humidity, pressure, day]
 					i+=1
 
 		self.merged_file=jsons_data.to_json(merged_file_name, orient='index' )
+	
+	def get_data(self):
+		return self.merged_file
 
 
 def twospirals(n_points=100000, noise=.5):
@@ -94,18 +92,7 @@ def twospirals(n_points=100000, noise=.5):
 	plt.legend()
 	plt.show()
 
-	#φ = i/16 * math.pi
-	#r = 6.5 * ((104 - i)/104)
-	
-	'''x = [(6.5 * ((104 - i)/104) * math.cos(i/16 * math.pi) * -1)/13 + 0.5 for i in range(n_points)]
-	y = [(6.5 * ((104 - i)/104) * math.sin(i/16 * math.pi) * -1)/13 + 0.5 for i in range(n_points)]
-	x+= [(6.5 * ((104 - i)/104) * math.cos(i/16 * math.pi) *  1)/13 + 0.5 for i in range(n_points)]
-	y+= [(6.5 * ((104 - i)/104) * math.sin(i/16 * math.pi) *  1)/13 + 0.5 for i in range(n_points)]
-	'''
 
-	#label=np.append(np.full((n_points), 0), np.full((n_points), 1))
-	
-	
 	offset=100000
 	start_time=1557059058
 	time_window=np.array(random.sample(range(start_time-offset, start_time+offset), 2*n_points))
@@ -113,11 +100,6 @@ def twospirals(n_points=100000, noise=.5):
 	df=pd.DataFrame({'lat':X[:,0], 'lon':X[:,1], 'label': y, 'unix time': time_window})
 	df.to_json('spirals.json', orient='index' )
 	
-
-
-	def get_data(self):
-		return self.merged_file
-
 
 if __name__ == "__main__":
 	#DB().initial_merge_clean_to_json()
