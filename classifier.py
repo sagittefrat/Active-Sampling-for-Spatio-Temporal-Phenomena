@@ -1,5 +1,5 @@
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler  
 from sklearn.neighbors import KNeighborsClassifier, NearestNeighbors
 from sklearn.metrics import classification_report, mean_squared_error 
