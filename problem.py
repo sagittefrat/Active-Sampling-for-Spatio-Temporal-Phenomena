@@ -218,38 +218,26 @@ class Problem():
 		return initial_train_point_df
  	 
  
-	def create_sub_problem(self, lookahead, mode='random'):
+	def create_sub_problem(self, lookahead=10, mode='random'):
 		check_if_feasible_route=False
 		objectives_to_sample_from=self.objectives.objectives_dict
  
 		classi=Classifier(self.full_train_set, self.train_point_df.index)
-		for j in range(2):
-		
-			if mode=='random':
-				new_objectives_df=self.full_train_set.sample(lookahead)
-				i=new_objectives_df.index.values[0]
-				
-				'''for i, new_objective_df in new_objectives_df.iterrows():
-					print('next to sample:',i) 
-					new_objective=Objective( i, self.objectives.locations_dict[i], TimeWindow( new_objective_df['unix time']), new_objective_df['label'])
-					new_objective_list.append(new_objective)                
-					self.objectives.objectives_dict[i]= new_objective
-				 
-				self.time_window=self.objectives.time_evaluator_for_planner(new_objective_list)
-				check_if_feasible_route=generate_planning_problem(self, self.distances, objectives_to_sample_from, mode)
-				print(check_if_feasible_route)
-				if check_if_feasible_route==True :
-					self.train_point_df=self.train_point_df.append(self.full_train_set.ix[i])
-					break
-				del self.objectives.objectives_dict[i]
-				banned_set.add(i)'''
 			
-			 
-			elif mode=='greedy':
-				i= classi.choose_new_objective()[j][0]
-		
-			
-			if i in self.banned_set: continue
+		if mode=='random':
+
+			new_objectives_df=self.full_train_set.sample(lookahead)
+			new_objectives_ix=new_objectives_df.index.values
+					
+		 
+		elif mode=='greedy':
+			new_objectives_ix= classi.choose_new_objective()
+	
+		for j in range(lookahead):
+			i=new_objectives_ix[j][0]
+			if i in self.banned_set: 
+				print ('i is in banned')
+				continue
 			print('next to sample:',i)
 			new_objective_df=self.full_train_set.loc[i] 
 			new_objective=Objective( i, self.objectives.locations_dict[i], TimeWindow( new_objective_df['unix time']), new_objective_df['label'])

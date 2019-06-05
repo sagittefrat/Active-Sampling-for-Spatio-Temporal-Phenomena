@@ -33,28 +33,15 @@ def main():
 		new_problem=copy.deepcopy(initial_problem)
 		print ('mode: %s' %(mode))
 		results_dict[mode]={}
-		'''objectives_to_sample_from=new_problem.objectives.objectives_dict
-		### split to features and labels and send to classifier:
-		test_df=new_problem.train_set.loc[~new_problem.train_set.index.isin(objectives_to_sample_from.keys()) ]
 		
-		X_test=test_df[['lat', 'lon', 'unix time']]
-		y_test=test_df[['label']]
-		X_test_ix=test_df.index
-
-		train_df=new_problem.train_set.ix[objectives_to_sample_from.keys(),:]
-		X_train=train_df[['lat', 'lon', 'unix time']]
-		y_train=train_df[['label']]
-		X_train_ix=train_df.index
-		classi=Classifier(X_test, y_test, X_train, y_train, X_train_ix, X_test_ix)'''
 		if mode== 'our': continue
 		for step in range(number_steps):
 			
 			print( 'step', step)
 			mse=new_problem.create_sub_problem(1, mode)
 			results_dict[mode][step]=mse
-			# need to return yes if feasible
+		
 			
-
 				
 	results_dict_df = pd.DataFrame.from_dict(results_dict, orient="index")
 	results_dict_df.to_csv('results.csv')
