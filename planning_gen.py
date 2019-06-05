@@ -7,7 +7,7 @@ def generate_planning_problem(problem, distance_evaluator, objectives_to_sample=
 	if objectives_to_sample==None:
 		objectives_to_sample=problem.objectives.objectives_dict
 	
-	initial_total_voi = 0
+	#initial_total_voi = 0
 	speed = 1
 
 	text=''
@@ -25,9 +25,10 @@ def generate_planning_problem(problem, distance_evaluator, objectives_to_sample=
 			if loc_i==loc_j: continue
 			if i==0:
 				distance_i_j=distance_evaluator[0][loc_j]
+				distance_i_j=distance_evaluator[loc_j][0]
 				can_move_text+='\t\t(can-move waypoint%s waypoint%s)\n' %(i, loc_j)
 				distance_text+='\t\t(= (distance waypoint%s waypoint%s) %s)\n' %(i, loc_j, distance_i_j)
-			
+				#continue
 			distance_i_j=distance_evaluator[loc_i][loc_j]
 			can_move_text+='\t\t(can-move waypoint%s waypoint%s)\n' %(loc_i, loc_j)
 			distance_text+='\t\t(= (distance waypoint%s waypoint%s) %s)\n' %(loc_i, loc_j, distance_i_j)
@@ -41,6 +42,7 @@ def generate_planning_problem(problem, distance_evaluator, objectives_to_sample=
 	for objective in problem.objectives.objectives_dict.values():
 
 		loc_id=objective.location.id
+		if 	loc_id==0: continue
 		objective_text_objects+= '\t\tobjective%s - objective\n' %(objective.id)
 		
 
@@ -61,26 +63,26 @@ def generate_planning_problem(problem, distance_evaluator, objectives_to_sample=
 	
 	#goal - sampling the desired objectives:
 	for objective in objectives_to_sample.values():
+		if 	objective.id ==0: continue
 		goal+='\t\t (sampled objective%s )\n' %(objective.id )
 
 
 	 
-	total_voi='\t\t(= (total-voi) %s)' %(initial_total_voi)
+	#total_voi='\t\t(= (total-voi) %s)' %(initial_total_voi)
 	
 	speed_rover='\t\t(= (speed rover%s) %s )' %(1, problem.vehicle.speed)
 	at_rover='\t\t(at rover%s waypoint%s)' %(1, 0)
 	sensor_free_init='\t\t(sensor-free)'
 	objects_text='\n\t(:objects\n %s\n %s\n \t\trover1 - rover\n\t)' %(loc_text_objects, objective_text_objects)
 	
-	init_text_no_optimise='%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+	init_text_no_optimise='%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
 															%(available_window_text,\
 															  visible_text,\
 															  can_move_text,\
 															  distance_text,\
 															  speed_rover,\
 															  at_rover,\
-															  sensor_free_init,\
-															  total_voi)
+															  sensor_free_init)
 
 	'''if mode=='optimise': 
 		init_text_no_optimise += '\n%s\n%s\n' \
@@ -92,9 +94,10 @@ def generate_planning_problem(problem, distance_evaluator, objectives_to_sample=
 		
 	init_text='\n\t(:init\n%s\n\t) ' %(init_text_no_optimise)
 	
-	metric_text='\n\t(:metric\n\t\tmaximize (total-voi))\n\t)'
+	
+	#metric_text='\n\t(:metric\n\t\tmaximize (total-voi))\n\t)'
 
-	text+='%s %s %s %s\n)' %(objects_text, init_text, goal_text, metric_text)
+	text+='%s %s %s \n)' %(objects_text, init_text, goal_text)#, metric_text)
 
 	
 	problem_name='rover_problem_%s.pddl' %(mode)
@@ -113,7 +116,7 @@ def call_planner(problem_name, out_file_name):
 
 	'''with open(out_file_name,"a+") as myoutput:
 		subprocess.Popen(['./rewrite-no-lp','--real-to-plan-time-multiplier', '0', 'rover_domain.pddl', problem_name], stdout=myoutput, stderr=subprocess.PIPE)'''
-	pipes=subprocess.Popen(['./rewrite-no-lp','--real-to-plan-time-multiplier', '0', 'rover_domain.pddl', problem_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	pipes=subprocess.Popen(['timeout', '100', './rewrite-no-lp','--real-to-plan-time-multiplier', '0', 'rover_domain.pddl', problem_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	std_out, std_err = pipes.communicate()
 	#print(std_out)
 	return gather_data(std_out)

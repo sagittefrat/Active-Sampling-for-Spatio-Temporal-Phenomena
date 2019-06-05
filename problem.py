@@ -93,14 +93,8 @@ class Objectives():
 	 
 	 
 		 
-	def __init__(self, train_point_list=None, length_initial_objectives=2):
-		 
-		""" constants: """
-		'''self.haifa_coor=Coor((32.7940, 34.9896)) #lat,lon
-		self.jeru_coor=Coor((31.7683, 35.2137))
-		self.eilat_coor=Coor((29.5577, 34.9519))
-		self.metula_coor=Coor((33.2772, 35.5782))
-		self.num_locations=5'''
+	def __init__(self, train_point_list=None):
+	
 		self.distances = {}
  
 		 
@@ -119,21 +113,9 @@ class Objectives():
 			self.num_objectives=self.randomize_objectives()
 		else: 
 			self.create_all_locations(train_point_list)
-			self.num_objectives=self.randomize_objectives_from_data(train_point_list, length_initial_objectives)
+			#self.num_objectives=self.randomize_objectives_from_data(train_point_list, length_initial_objectives)
  
-	 
-	def randomize_objectives_from_data(self, train_point_list, length_initial_objectives,):
-		 
-		train_point_list=train_point_list.sample(min(len(train_point_list), length_initial_objectives))
-		for i, data_point in train_point_list.iterrows():
-			#location=Location( i, (data_point['lat'], data_point['lon']) )
- 
-			#self.locations_dict[i]= location
-			self.objectives_dict[i]= Objective( i, self.locations_dict[i], TimeWindow( data_point['unix time']), data_point['label'])
-			 
-	 
-		return len(train_point_list)
- 
+
 	 
 	def randomize_objectives(self):
 		 
@@ -157,7 +139,7 @@ class Objectives():
 		# this is the old version for weather
 		#location=Location(0, ( round((self.eilat_coor.x+self.metula_coor.x)/2, 4), round((self.eilat_coor.y+self.metula_coor.y)/2, 4)))    # ((x coordinate, y coordinate))
 		location=Location(0, ( 0.01705, -0.03005) )     # ((x coordinate, y coordinate))
-		 
+		self.objectives_dict[0]= Objective( 0, location, TimeWindow() )
 		return location
 	 
 	def distance_evaluator(self, new_nodes_list=None):
@@ -172,7 +154,7 @@ class Objectives():
 			for from_node in new_nodes_list[i:]:
 				self.distances[from_node]=self.distances.get(from_node, {})
 				 
-				self.distances[to_node][from_node] = self.locations_dict[from_node].euclidian_distance( self.locations_dict[to_node])
+				self.distances[to_node][from_node] = round(self.locations_dict[from_node].euclidian_distance( self.locations_dict[to_node])/100,2)
 				self.distances[from_node][to_node]=self.distances[to_node][from_node]
 			 
 		 
@@ -183,7 +165,7 @@ class Objectives():
  
 		if new_objective_list==None:
 			new_objective_list=self.objectives_dict.values()
-			 
+		
 		for objective in new_objective_list:
 				 
 			self.time_window_dict[objective.id]= objective.time_window.find_time_window()
@@ -207,9 +189,9 @@ class Vehicle():
 	def __init__(self):
 		 
 		"""Initializes the vehicle properties"""
-		 
+		self.speed=1
 		# Travel speed: 100km/h to convert in m/min =1600.67 meters in 1 minute
-		self.speed = round(100 * 60 / 3.6, 2)
+		#self.speed = round(100 * 60 / 3.6, 2)
  
  
 class Problem():
@@ -221,79 +203,70 @@ class Problem():
 		self.vehicle = Vehicle()
 		self.num_vehicles = 1
 		self.full_database=full_database
-		self.train_set=full_database.train_set  
-		self.objectives=Objectives(self.train_set)
-		 
-		#self.num_objectives=self.objectives.num_objectives
+		self.full_train_set=full_database.train_set  
+		self.objectives=Objectives(self.full_train_set)
+		
 		self.distances=self.objectives.distance_evaluator()
 		self.time_window=self.objectives.time_evaluator_for_planner()
- 
+		length_initial_objectives=100
+		self.train_point_df=self.randomize_objectives_from_data(full_database.train_set , length_initial_objectives)
+		self.banned_set=set()
 		 
+	def randomize_objectives_from_data(self, train_point_list, length_initial_objectives):
+		 
+		initial_train_point_df=train_point_list.sample(min(len(train_point_list), length_initial_objectives))
+		return initial_train_point_df
+ 	 
  
 	def create_sub_problem(self, lookahead, mode='random'):
 		check_if_feasible_route=False
-		objectives_to_sample=self.objectives.objectives_dict
-		### split to features and labels and send to classifier:
-		#test_df=self.full_database.merged_file.loc[~self.full_database.merged_file.index.isin(objectives_to_sample.keys()) ]
-		test_df=self.train_set.loc[~self.train_set.index.isin(objectives_to_sample.keys()) ]
+		objectives_to_sample_from=self.objectives.objectives_dict
+ 
+		classi=Classifier(self.full_train_set, self.train_point_df.index)
+		for j in range(2):
 		
-		X_test=test_df[['lat', 'lon', 'unix time']]
-		y_test=test_df[['label']]
-		X_test_ix=test_df.index
-
-		train_df=self.train_set.ix[objectives_to_sample.keys(),:]
-		X_train=train_df[['lat', 'lon', 'unix time']]
-		y_train=train_df[['label']]
-		X_train_ix=train_df.index
-		 
-		classi=Classifier(X_test, y_test, X_train, y_train, X_train_ix, X_test_ix)
- 
- 
-		if mode=='random':
-			for i in range(3):
-				new_objective_list=[]
+			if mode=='random':
+				new_objectives_df=self.full_train_set.sample(lookahead)
+				i=new_objectives_df.index.values[0]
 				
-				 
-				new_objectives_df=self.train_set.sample(lookahead)
-				for i, new_objective_df in new_objectives_df.iterrows():
-					   
+				'''for i, new_objective_df in new_objectives_df.iterrows():
+					print('next to sample:',i) 
 					new_objective=Objective( i, self.objectives.locations_dict[i], TimeWindow( new_objective_df['unix time']), new_objective_df['label'])
 					new_objective_list.append(new_objective)                
 					self.objectives.objectives_dict[i]= new_objective
 				 
 				self.time_window=self.objectives.time_evaluator_for_planner(new_objective_list)
-				check_if_feasible_route=generate_planning_problem(self, self.distances, objectives_to_sample, mode)
-				
+				check_if_feasible_route=generate_planning_problem(self, self.distances, objectives_to_sample_from, mode)
+				print(check_if_feasible_route)
 				if check_if_feasible_route==True :
+					self.train_point_df=self.train_point_df.append(self.full_train_set.ix[i])
 					break
 				del self.objectives.objectives_dict[i]
+				banned_set.add(i)'''
 			
 			 
-		elif mode=='our':
-			for j in range(3):
-			
-				i= classi.choose_new_objective(self.train_set, objectives_to_sample.keys())[j][0]
-				print('next to sample:',i)
-				new_objective_df=self.train_set.loc[i] 
-				new_objective=Objective( i, self.objectives.locations_dict[i], TimeWindow( new_objective_df['unix time']), new_objective_df['label'])
-						 
-				self.objectives.objectives_dict[i]= new_objective
-				self.time_window=self.objectives.time_evaluator_for_planner([new_objective,])
-				
-				check_if_feasible_route=generate_planning_problem(self, self.distances, objectives_to_sample, mode)
-				print(check_if_feasible_route)
-			
-				if check_if_feasible_route==True:
-					break
-				del self.objectives.objectives_dict[i]
-					
+			elif mode=='greedy':
+				i= classi.choose_new_objective()[j][0]
 		
-		train_df=self.train_set.ix[objectives_to_sample.keys(),:]
-		X_train=train_df[['lat', 'lon', 'unix time']]
-		y_train=train_df[['label']]
-		X_train_ix=train_df.index
-		print('len train: %s\n' %(len(X_train)))
-		classi.classify(X_train, y_train,X_train_ix, X_test_ix)
+			
+			if i in self.banned_set: continue
+			print('next to sample:',i)
+			new_objective_df=self.full_train_set.loc[i] 
+			new_objective=Objective( i, self.objectives.locations_dict[i], TimeWindow( new_objective_df['unix time']), new_objective_df['label'])
+					 
+			self.objectives.objectives_dict[i]= new_objective
+			self.time_window=self.objectives.time_evaluator_for_planner([new_objective,])
+			
+			check_if_feasible_route=generate_planning_problem(self, self.distances, objectives_to_sample_from, mode)
+			print(check_if_feasible_route)
 		
-		return self.objectives.objectives_dict
+			if check_if_feasible_route==True:
+				self.train_point_df=self.train_point_df.append(self.full_train_set.ix[i])
+				#print (self.train_point_df)
+				break
+			del self.objectives.objectives_dict[i]
+			self.banned_set.add(i)
+
+		
+		return classi.mse
 																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					   
