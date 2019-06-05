@@ -9,7 +9,7 @@
     (:functions
         (speed ?rover - rover)
         (distance ?from-waypoint - waypoint ?to-waypoint - waypoint)
-        (total-voi)
+        
 	
 		
         
@@ -22,7 +22,7 @@
 	    (need-sample ?objective - objective ?waypoint - waypoint )
         (sampled ?objective - objective)
 	    (sensor-free)
-	    (moved)		
+	    		
 	)
 	
 
@@ -47,7 +47,7 @@
 	        (and 
 	            (at end (at ?rover ?to-waypoint))
 	            (at start (not (at ?rover ?from-waypoint)))
-				(at end (moved))
+				
 	        )	
 	)
 	(:durative-action sample
@@ -75,7 +75,6 @@
 	        	(at start (not (sensor-free)))
 	        	(at end (sensor-free))
 				(at start (not (need-sample ?objectivex ?waypoint)))
-				(at end (increase (total-voi) 1))
 				(at end (sampled ?objectivex))
 				
 				 
