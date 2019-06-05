@@ -234,7 +234,7 @@ class Problem():
 			new_objectives_ix= classi.choose_new_objective()
 	
 		for j in range(lookahead):
-			i=new_objectives_ix[j][0]
+			i=new_objectives_ix[j]
 			if i in self.banned_set: 
 				print ('i is in banned')
 				continue

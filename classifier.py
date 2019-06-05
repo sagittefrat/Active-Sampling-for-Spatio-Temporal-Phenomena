@@ -2,7 +2,8 @@
 #import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler  
 from sklearn.neighbors import KNeighborsClassifier, NearestNeighbors
-from sklearn.metrics import classification_report, mean_squared_error 
+from sklearn.metrics import classification_report, mean_squared_error
+from operator import itemgetter 
 
 class Classifier():
 	
@@ -55,5 +56,6 @@ class Classifier():
 		for row_number, ix in enumerate(self.X_test_ix):
 			#print (row_number, ix)
 			prob_list.append( (ix, abs(proba[row_number,0]-0.5) ) )
-		
-		return sorted(prob_list, key = lambda x: x[1])
+		prob_list_sorted=sorted(prob_list, key = lambda x: x[1])
+		ix_list_sorted = [el[0] for el in prob_list_sorted]
+		return ix_list_sorted
