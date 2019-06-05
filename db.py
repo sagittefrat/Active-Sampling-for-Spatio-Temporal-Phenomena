@@ -3,7 +3,7 @@
 
 import pandas as pd
 import os, json, datetime
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 data_path='./data/'
 merged_file_name='labeled_data_weather.json'
 
