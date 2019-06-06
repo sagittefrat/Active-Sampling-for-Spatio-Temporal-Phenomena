@@ -38,7 +38,7 @@ def main():
 		for step in range(number_steps):
 			
 			print( 'step', step)
-			mse=new_problem.create_sub_problem(1, mode)
+			mse=new_problem.create_sub_problem(10, mode)
 			results_dict[mode][step]=mse
 		
 			

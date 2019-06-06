@@ -226,13 +226,14 @@ class Problem():
 			
 		if mode=='random':
 
-			new_objectives_df=self.full_train_set.sample(lookahead)
-			new_objectives_ix=new_objectives_df.index.values
+			new_objectives_df=self.full_train_set.sample(100)
+			new_objectives_ix=set(new_objectives_df.index.values)
 					
 		 
 		elif mode=='greedy':
-			new_objectives_ix= classi.choose_new_objective()
-	
+			new_objectives_ix= set(classi.choose_new_objective())
+		new_objectives_ix=list(new_objectives_ix.difference(self.banned_set))
+
 		for j in range(lookahead):
 			i=new_objectives_ix[j]
 			if i in self.banned_set: 
