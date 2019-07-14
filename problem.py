@@ -218,7 +218,7 @@ class Problem():
 		return initial_train_point_df
  	 
  
-	def create_sub_problem(self, lookahead=10, mode='random'):
+	def create_sub_problem(self, tries=10, mode='random'):
 		check_if_feasible_route=False
 		objectives_to_sample_from=self.objectives.objectives_dict
  
@@ -231,10 +231,11 @@ class Problem():
 					
 		 
 		elif mode=='greedy':
-			new_objectives_ix= set(classi.choose_new_objective())
-		new_objectives_ix=list(new_objectives_ix.difference(self.banned_set))
+			new_objectives_ix=classi.choose_new_objective()
+			
+		new_objectives_ix=[x for x in new_objectives_ix if x not in self.banned_set]
 
-		for j in range(lookahead):
+		for j in range(tries):
 			i=new_objectives_ix[j]
 			if i in self.banned_set: 
 				print ('i is in banned')
@@ -251,11 +252,10 @@ class Problem():
 		
 			if check_if_feasible_route==True:
 				self.train_point_df=self.train_point_df.append(self.full_train_set.ix[i])
-				#print (self.train_point_df)
 				break
 			del self.objectives.objectives_dict[i]
 			self.banned_set.add(i)
 
 		
-		return classi.mse
+		return (classi.mse, self.objectives.objectives_dict)
 																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					   
