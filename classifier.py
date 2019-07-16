@@ -72,8 +72,7 @@ class Classifier():
 		plt.savefig('fig.png')
 		
 		#print(classification_report(self.y_test, y_pred))
-		return mean_squared_error(self.y_test, y_pred, multioutput='raw_values')[0]
-
+		return mean_squared_error(self.y_test, y_pred, multioutput='raw_values')
 	def choose_new_objective(self):
 		
 	
