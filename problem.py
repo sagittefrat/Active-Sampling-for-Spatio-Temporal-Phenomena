@@ -203,13 +203,18 @@ class Problem():
 		self.vehicle = Vehicle()
 		self.num_vehicles = 1
 		self.full_database=full_database
-		self.full_train_set=full_database.train_set  
+		self.full_train_set=full_database.train_set 
+		
 		self.objectives=Objectives(self.full_train_set)
 		
-		self.distances=self.objectives.distance_evaluator()
-		self.time_window=self.objectives.time_evaluator_for_planner()
+		
 		length_initial_objectives=100
 		self.train_point_df=self.randomize_objectives_from_data(full_database.train_set , length_initial_objectives)
+		#self.train_without_trian_points=self.full_train_set.drop(self.train_point_df)
+		#self.distances=self.objectives.distance_evaluator(self.train_without_trian_points)
+		self.distances=self.objectives.distance_evaluator()
+	
+		self.time_window=self.objectives.time_evaluator_for_planner()
 		self.banned_set=set()
 		 
 	def randomize_objectives_from_data(self, train_point_list, length_initial_objectives):
@@ -220,22 +225,28 @@ class Problem():
  
 	def create_sub_problem(self, tries=10, mode='random'):
 		check_if_feasible_route=False
-		objectives_to_sample_from=self.objectives.objectives_dict
+		#objectives_to_sample_from=self.objectives.objectives_dict
  
 		classi=Classifier(self.full_train_set, self.train_point_df.index)
 			
 		if mode=='random':
 
-			new_objectives_df=self.full_train_set.sample(100)
-			new_objectives_ix=set(new_objectives_df.index.values)
+			new_objectives_df=self.full_train_set.sample(3)
+			new_objectives_ix=new_objectives_df.index.values ###this has cahnged - not set anymore
 					
 		 
 		elif mode=='greedy':
-			new_objectives_ix=classi.choose_new_objective()
+			new_objectives_ix=classi.choose_new_objective(tries)
 			
+		
+		elif mode=='our':
+			new_objectives_ix=classi.choose_new_objective()
+		
+		
+	
 		new_objectives_ix=[x for x in new_objectives_ix if x not in self.banned_set]
-
-		for j in range(tries):
+		
+		for j in range(len(new_objectives_ix)):
 			i=new_objectives_ix[j]
 			if i in self.banned_set: 
 				print ('i is in banned')
@@ -247,7 +258,7 @@ class Problem():
 			self.objectives.objectives_dict[i]= new_objective
 			self.time_window=self.objectives.time_evaluator_for_planner([new_objective,])
 			
-			check_if_feasible_route=generate_planning_problem(self, self.distances, objectives_to_sample_from, mode)
+			check_if_feasible_route=generate_planning_problem(self, self.distances, self.objectives.objectives_dict, mode)
 			print(check_if_feasible_route)
 		
 			if check_if_feasible_route==True:
@@ -255,6 +266,8 @@ class Problem():
 				break
 			del self.objectives.objectives_dict[i]
 			self.banned_set.add(i)
+		
+		
 
 		
 		return (classi.mse, self.objectives.objectives_dict)
