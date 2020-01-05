@@ -72,8 +72,9 @@ class Classifier():
 		plt.savefig('fig.png')
 		
 		#print(classification_report(self.y_test, y_pred))
-		return mean_squared_error(self.y_test, y_pred, multioutput='raw_values')[0]
-	def choose_new_objective(self, tries):
+		return mean_squared_error(self.y_test, y_pred, multioutput='raw_values')
+
+	def choose_new_objective(self):
 		
 	
 		proba=self.clf.predict_proba(self.X_test)
@@ -82,7 +83,5 @@ class Classifier():
 			#print (row_number, ix)
 			prob_list.append( (ix, abs(proba[row_number,0]-0.5) ) )
 		prob_list_sorted=sorted(prob_list, key = lambda x: x[1])
-		
 		ix_list_sorted = [el[0] for el in prob_list_sorted]
-	
-		return ix_list_sorted[:tries]
+		return ix_list_sorted
