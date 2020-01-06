@@ -10,6 +10,7 @@ import ast, json
 
 
 data_folder='../data/'
+figures_folder='../figures'
 MODES= ['Uncertainty', 'Random', 'Lookahead']
 modes= ['greedy', 'random', 'lookahead']
 waypoints='t-waypoints scheduled'
@@ -60,7 +61,7 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, problem_
 	ax_train.set_ylabel('Longitude')
 	ax_train.set_zlabel('Minute')
 
-	fig_train.savefig('sim_all_train_%s_%s.png' %(problem_type, precent_train))
+	fig_train.savefig('%s/sim_all_train_%s_%s.png' %(figures_folder,problem_type, precent_train))
 	
 
 	
@@ -88,7 +89,7 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, problem_
 	ax_train.scatter(xs, ys, zs, c=colors[2], marker=markers[2], s=200, label='initial_train')
 	ax_train.legend(loc='upper left')
 
-	fig_train.savefig('sim_initial_train_%s_%s.png' %(problem_type, precent_train))
+	fig_train.savefig('%s/sim_initial_train_%s_%s.png' %(figures_folder,problem_type, precent_train))
 	
 	
 	for i, mode in enumerate(modes):
@@ -132,7 +133,7 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, problem_
 			ax_train_new.scatter(xs, ys, zs, marker=markers[2], s=200, color=colors[2], label='Added Samples')
 			ax_train_new.set_title('%s Day: %s' %(MODES[i], day))
 			ax_train_new.legend(loc='upper left')
-			fig_train_new.savefig('sim_initial_train_%s_%s_%s_%sday_problem_number%s.png' %(problem_type, precent_train, mode, day, problem_number))
+			fig_train_new.savefig('%s/sim_initial_train_%s_%s_%s_%sday_problem_number%s.png' %(figures_folder,problem_type, precent_train, mode, day, problem_number))
 			
 			
 
@@ -165,7 +166,7 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, problem_
 		plt.legend()
 		plt.xlabel('lat')
 		plt.title('route')
-		plt.savefig('route_%s_%s_%s_%sday_problem_number%s.png' %(problem_type, precent_train, mode, day, problem_number))
+		plt.savefig('%s/route_%s_%s_%s_%sday_problem_number%s.png' %(figures_folder,problem_type, precent_train, mode, day, problem_number))
 		plt.clf()
 		
 		

@@ -11,7 +11,7 @@ score='score'
 expanded='nodes_expanded'
 attributes=[time, 'Day', waypoints, score, expanded]
 legend_location='upper right'
-
+figures_folder='figures'
 
 arg_to_plot0='Information Gain in Number of Points Scheduled'
 arg_to_plot1='Information Gain in Time'
@@ -134,7 +134,7 @@ def create_graphs(results_df_all, df_score_points, name_to_fig, gathered=False, 
 	plt.xlabel('Number of Points Scheduled')
 	plt.ylabel('Average Score')
 	plt.title(arg_to_plot0)
-	plt.savefig('%s_%s_points.png' %(args_to_plot[1], name_to_fig))
+	plt.savefig('%s/%s_%s_points.png' %(figures_folder, args_to_plot[1], name_to_fig))
 	plt.clf()
 
 
@@ -163,7 +163,7 @@ def create_graphs(results_df_all, df_score_points, name_to_fig, gathered=False, 
 		plt.xlabel(x_label)
 		plt.ylabel(ylables[i])
 		plt.title(titles[i])
-		plt.savefig('%s_%s_%s.png' %(args_to_plot[i], name_to_fig, day))
+		plt.savefig('%s/%s_%s_%s.png' %(figures_folder,args_to_plot[i], name_to_fig, day))
 		plt.clf()
 			
 	
