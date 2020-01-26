@@ -1,4 +1,4 @@
-# thesis
+# Active-Sampling-for-Spatio-Temporal-Phenomena
 ## running:
 optimise mode:
 ``` $ ./rewrite-no-lp --optimise --real-to-plan-time-multiplier 0 rover_domain.pddl problem.pddl```
