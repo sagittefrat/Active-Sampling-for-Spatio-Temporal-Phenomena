@@ -11,7 +11,8 @@ from pprint import pprint
 import subprocess
 
 
-MODES=('lookahead', 'random', 'greedy')
+MODES=('lookahead', 'random', 'greedy', 'GP')
+#MODES=('GP',)   #### remove this at the end
 #results_file_name='results.csv'
 data_folder=os.path.abspath('../data/')
 
@@ -30,7 +31,7 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, days=3):
 	
 	problem_type=problem_type
 
-	
+
 	full_database=db.DB(data_folder, problem_type, float(precent_train) )
 	tries_each_step=3
 	
@@ -46,8 +47,9 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, days=3):
 	for i in problem_range:
 		print (i)
 		random.seed(i)
-		mode_1, mode_2, mode_3='%s_%s' %(MODES[0], i), '%s_%s' %(MODES[1], i), '%s_%s' %(MODES[2], i)
-		if  (os.path.exists('../results/results_%s/%s.csv'%(problem_folder_name, mode_1)) & os.path.exists('../results/results_%s/%s.csv'%(problem_folder_name, mode_2))& os.path.exists('../results/results_%s/%s.csv'%(problem_folder_name, mode_3))): continue
+        #### @@@@@@@@@@@@@@@remove two bottom line comments:
+		#mode_1, mode_2, mode_3='%s_%s' %(MODES[0], i), '%s_%s' %(MODES[1], i), '%s_%s' %(MODES[2], i)
+		#if  (os.path.exists('../results/results_%s/%s.csv'%(problem_folder_name, mode_1)) & os.path.exists('../results/results_%s/%s.csv'%(problem_folder_name, mode_2))& os.path.exists('../results/results_%s/%s.csv'%(problem_folder_name, mode_3))): continue
 		
 		initial_problem = Problem(problem_type, full_database, benchmark_folder_name, i)
 		#continue ####

@@ -3,6 +3,8 @@
 from sklearn.preprocessing import StandardScaler  
 from sklearn.neighbors import KNeighborsClassifier, NearestNeighbors
 from sklearn.metrics import classification_report, mean_squared_error
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
 import numpy as np 
 from operator import itemgetter 
 import random
@@ -39,7 +41,7 @@ class Classifier():
 		
 		self.num_neighbors=num_neighbors
 		self.clf = KNeighborsClassifier(n_neighbors=self.num_neighbors, weights='distance') 
-		
+		self.GP_clf=GaussianProcessClassifier()
 		#self.classifier.fit(self.X_train, self.y_train.values.ravel())  
 		self.mse=self.classify()
 	
@@ -53,10 +55,13 @@ class Classifier():
 		plt.savefig('problem_%s_iteration_%s.png' %(i, j))
 		plt.clf()'''
 		
-	def classify(self, X_train_ix=None):
+	def classify(self, mode='random',X_train_ix=None):
 		
 		self.clf.fit(self.X_train, self.y_train) 
-
+		self.GP_clf.fit(self.X_train, self.y_train) 
+		if mode=='GP': 
+			y_pred = self.GP_clf.predict(self.X_test)
+			return mean_squared_error(self.y_test, y_pred, multioutput='raw_values')[0]
 		y_pred = self.clf.predict(self.X_test)
 		
 		'''fig = plt.figure(1, figsize=(4, 3))
@@ -88,24 +93,27 @@ class Classifier():
 		
 		kneighbors=self.clf.kneighbors(self.X_test)
 		proba=self.clf.predict_proba(self.X_test)
-		
+		GP_proba=self.GP_clf.predict_proba(self.X_test)
 		
 		prob_list=[]
+		GP_prob_list=[]
 		kneighbors_list=[]
 		expected_mse_list=[]
+        
 		for row_number, ix in enumerate(self.X_test_ix):
 			if ix in banned_set: continue
 			
 			if proba.shape[1]==1: 
 				print([proba[0,0]])
 				prob_list=list(zip(self.X_test_ix, [proba[0,0]]*len(self.X_test_ix)))
+				GP_prob_list=list(zip(self.X_test_ix, [GP_proba[0,0]]*len(self.X_test_ix)))
 				kneighbors_list=prob_list
 				expected_mse_list=prob_list
 				break
 			
 			kneighbors_list.append((ix, kneighbors[0][row_number,0]/kneighbors[0][row_number,1] ) )
 			prob_list.append( (ix, abs(proba[row_number,0]-0.5) ) )
-			
+			GP_prob_list.append( (ix, abs(GP_proba[row_number,0]-0.5) ) )
 
 			train_point_df_zero=self.train_point_df.copy()
 			added_sample_df_zero=self.full_train_set.loc[ix].copy()
@@ -137,6 +145,9 @@ class Classifier():
 			expected_mse_list_sorted=sorted(expected_mse_list, key = lambda x: x[1])
 			
 			ix_list_sorted = [el[0] for el in expected_mse_list_sorted]
-
-		
+		##### this is new mode- Gaussian Process:
+		elif mode == 'GP':
+			GP_prob_list_sorted=sorted(GP_prob_list, key = lambda x: x[1])
+			
+			ix_list_sorted = [el[0] for el in GP_prob_list_sorted]
 		return ix_list_sorted
