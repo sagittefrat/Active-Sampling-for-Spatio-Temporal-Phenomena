@@ -4,6 +4,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.patches import FancyArrowPatch 
+import numpy as np
 import glob
 import db
 import ast, json
@@ -119,7 +121,7 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, problem_
 			
 			added_train_set_labels=[int(s) for s in added_train_set_labels if s.isdigit()]
 			
-			data_label_df=data_df.loc[added_train_set_labels]
+			data_label_df=data_df.loc[added_train_set_labels[2:]]
 			
 			xs = [data_label_df.lat]
 			ys = [data_label_df.lon]
@@ -140,7 +142,7 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, problem_
 	for mode in modes:
 		fig=plt.figure()
 		ax = fig.add_subplot(111)
-		#ax_route = fig_route.add_subplot(111)
+		#ax = fig.add_subplot(111, projection='3d')
 		
 		days=set(result_df['Day'].values)
 		for day in days:
@@ -154,21 +156,34 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, problem_
 			
 
 			added_to_route=added_train_set_labels[2:]
-			#print(data_df.loc[added_to_route][['lat', 'lon']])
+			#data_df.loc[added_to_route][['lat', 'lon', 'mm']].to_csv('results_%s_%s_%s_%s_%s.csv' %(problem_type, precent_train, mode, day, problem_number))
 			
-			ax.plot( data_df.loc[added_to_route]['lat'], data_df.loc[added_to_route]['lon'], label=str(day))
-			#ax.arrow(0, 0, 10, 20, head_width=3, head_length=6, fc='k', ec='k')
-			#bx=res_gree_attr.plot(label=MODES[1])
-			#cx=res_look_attr.plot(label=MODES[2])
-
+			ax.plot( data_df.loc[added_to_route]['lat'], data_df.loc[added_to_route]['lon'], label= 'Day %s' %(day), color=colors[day])
+			#ax.plot( data_df.loc[added_to_route]['lat'], data_df.loc[added_to_route]['lon'], data_df.loc[added_to_route]['mm'], label=str(day))
+			arrow(data_df.loc[added_to_route]['lat'].values, data_df.loc[added_to_route]['lon'].values,ax,4)
+			#arrow(data_df.loc[added_to_route]['lat'].values, data_df.loc[added_to_route]['lon'].values,ax,4, data_df.loc[added_to_route]['mm'].values)
 
 			#fig_route.savefig('3day_route_%s_%s_%s_%sday_problem_number%s.png' %(problem_type, precent_train, mode, day, problem_number))
-		plt.legend()
-		plt.xlabel('lat')
-		plt.title('route')
+		plt.legend(loc='upper left')
+		plt.xlabel('Latitude')
+		plt.ylabel('Longitude')
+		plt.title('Route')
+		plt.tight_layout()
+
 		plt.savefig('%s/route_%s_%s_%s_%sday_problem_number%s.png' %(figures_folder,problem_type, precent_train, mode, day, problem_number))
 		plt.clf()
-		
+
+def arrow(x,y,ax,n, z=None):
+	d = len(x)//(n+1)    
+	ind = np.arange(d,len(x),d)
+	for i in ind:
+		if z is None:
+			ar = FancyArrowPatch ((x[i-1], y[i-1]), (x[i], y[i]), 
+                              arrowstyle='->', mutation_scale=20)
+		else:
+			ar = FancyArrowPatch ((x[i-1], y[i-1], z[i-1]), (x[i], y[i], z[i]), 
+                              arrowstyle='->', mutation_scale=20)
+		ax.add_patch(ar)	
 		
 if __name__ == '__main__':
 	main( sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4] )	

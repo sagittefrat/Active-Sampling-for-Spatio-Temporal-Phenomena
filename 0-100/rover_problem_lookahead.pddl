@@ -4,24 +4,38 @@
 	(:objects
  		waypoint0 - waypoint
 		waypoint0 - waypoint
-		waypoint3347 - waypoint
+		waypoint101321 - waypoint
+		waypoint66614 - waypoint
 
- 		objective3347 - objective
+ 		objective101321 - objective
+		objective66614 - objective
 
  		rover1 - rover
 	) 
 	(:init
-		(at 19.0 (available-window objective3347)) (at 39.0 (not (available-window objective3347)))
+		(at 2252.0 (available-window objective101321)) (at 2272.0 (not (available-window objective101321)))
+		(at 3057.0 (available-window objective66614)) (at 3077.0 (not (available-window objective66614)))
 
-		(need-sample objective3347 waypoint3347)
+		(need-sample objective101321 waypoint101321)
+		(need-sample objective66614 waypoint66614)
 
-		(can-move waypoint0 waypoint3347)
-		(can-move waypoint0 waypoint3347)
-		(can-move waypoint3347 waypoint0)
+		(can-move waypoint0 waypoint101321)
+		(can-move waypoint0 waypoint101321)
+		(can-move waypoint0 waypoint66614)
+		(can-move waypoint0 waypoint66614)
+		(can-move waypoint101321 waypoint0)
+		(can-move waypoint101321 waypoint66614)
+		(can-move waypoint66614 waypoint0)
+		(can-move waypoint66614 waypoint101321)
 
-		(= (distance waypoint0 waypoint3347) 14.77)
-		(= (distance waypoint0 waypoint3347) 14.77)
-		(= (distance waypoint3347 waypoint0) 14.77)
+		(= (distance waypoint0 waypoint101321) 0.02)
+		(= (distance waypoint0 waypoint101321) 0.02)
+		(= (distance waypoint0 waypoint66614) 0.02)
+		(= (distance waypoint0 waypoint66614) 0.02)
+		(= (distance waypoint101321 waypoint0) 0.02)
+		(= (distance waypoint101321 waypoint66614) 0.07)
+		(= (distance waypoint66614 waypoint0) 0.02)
+		(= (distance waypoint66614 waypoint101321) 0.07)
 
 		(= (speed rover1) 1 )
 		(at rover1 waypoint0)
@@ -30,7 +44,8 @@
 	)  
 	(:goal
 		(and
- 		 (sampled objective3347 )
+ 		 (sampled objective101321 )
+		 (sampled objective66614 )
 		)
 	) 
 )

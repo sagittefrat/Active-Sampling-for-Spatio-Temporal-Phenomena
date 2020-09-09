@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-MODES= ['Random', 'Uncertainty', 'Lookahead']
+MODES= ['Random', 'Uncertainty', 'ALSa', 'GP']
 waypoints='t-waypoints scheduled'
 time='total_time_sec'
 score='score'
@@ -20,7 +20,7 @@ arg_to_plot3='Points Expanded in Time'
 args_to_plot = (arg_to_plot2[7:-8], arg_to_plot1[:-13], arg_to_plot3[7:-8])
 ylables = (arg_to_plot2[:-8], 'Average Score[%]', arg_to_plot3[:-8])
 titles =  (arg_to_plot2, arg_to_plot1, arg_to_plot3)
-x_label="Time [sec]"
+x_label="Running Time [sec]"
 #ylabel=('Points-Scheduled', 'Average Score', 'Points-Expanded')
 		
 
@@ -56,8 +56,8 @@ def main(problem_type='spirals', precent_train=0.1, time_to_reach=1800, days=5):
 	
 		last_row= df.iloc[-1:]
 		
-		if int(last_row.total_time_sec)<(time_to_reach-100): 
-			print ('not until %s: %s'%(time_to_reach-100, file))
+		if int(last_row.total_time_sec)<(time_to_reach-10): 
+			print ('not until %s: %s'%(time_to_reach-10, file))
 			#continue
 		df.drop(df.loc[df[time]>time_to_reach].index, inplace=True)
 	
@@ -111,7 +111,7 @@ def create_graphs(results_df_all, df_score_points, name_to_fig, gathered=False, 
 	df_score_points_rand=df_score_points[df_score_points['mode']=='random']
 	df_score_points_gree=df_score_points[df_score_points['mode']=='greedy']
 	df_score_points_look=df_score_points[df_score_points['mode']=='lookahead']
-
+	df_score_points_GP=df_score_points[df_score_points['mode']=='GP']
 
 	res_rand=df_score_points_rand[attributes].set_index(waypoints)
 	res_rand_score=res_rand.groupby(waypoints)[score].mean()
@@ -119,14 +119,17 @@ def create_graphs(results_df_all, df_score_points, name_to_fig, gathered=False, 
 	res_gree_score=res_gree.groupby(waypoints)[score].mean()
 	res_look=df_score_points_look[attributes].set_index(waypoints)
 	res_look_score=res_look.groupby(waypoints)[score].mean()
+	res_GP=df_score_points_GP[attributes].set_index(waypoints)
+	res_GP_score=res_GP.groupby(waypoints)[score].mean()
 	
 	plt.figure()
 	'''ax=res_rand_score.plot(label=MODES[0])
 	bx=res_gree_score.plot(label=MODES[1])
 	cx=res_look_score.plot(label=MODES[2])'''
-	res_rand_score.plot(label=MODES[0])
-	res_gree_score.plot(label=MODES[1])
-	res_look_score.plot(label=MODES[2])
+	res_rand_score.plot(label=MODES[0],style='+-')
+	res_gree_score.plot(label=MODES[1],style='+-')
+	res_look_score.plot(label=MODES[2],style='+-')
+	res_GP_score.plot(label=MODES[3],style='+-')
 	
 	
 	#plt.legend([ax, bx, cx], MODES, loc=legend_location)
@@ -147,11 +150,15 @@ def create_graphs(results_df_all, df_score_points, name_to_fig, gathered=False, 
 		res_look=results_df_all[results_df_all['mode']=='lookahead'][attributes].set_index(time)
 		res_look_attr=res_look.groupby(time)[attr].mean()
 
+		res_GP=results_df_all[results_df_all['mode']=='GP'][attributes].set_index(time)
+		res_GP_attr=res_GP.groupby(time)[attr].mean()
+
 
 		plt.figure()
-		ax=res_rand_attr.plot(label=MODES[0])
-		bx=res_gree_attr.plot(label=MODES[1])
-		cx=res_look_attr.plot(label=MODES[2])
+		ax=res_rand_attr.plot(label=MODES[0],style='+-')
+		bx=res_gree_attr.plot(label=MODES[1],style='+-')
+		cx=res_look_attr.plot(label=MODES[2],style='+-')
+		dx=res_GP_attr.plot(label=MODES[3],style='+-')
 
 
 		if gathered:
