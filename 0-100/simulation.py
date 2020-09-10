@@ -13,8 +13,8 @@ import ast, json
 
 data_folder='../data/'
 figures_folder='../figures'
-MODES= ['Uncertainty', 'Random', 'Lookahead']
-modes= ['greedy', 'random', 'lookahead']
+MODES= ['Uncertainty', 'Random', 'Lookahead', 'GP']
+modes= ['greedy', 'random', 'lookahead', 'GP']
 waypoints='t-waypoints scheduled'
 time='total_time_sec'
 score='score'
